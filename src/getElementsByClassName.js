@@ -16,8 +16,7 @@ var getElementsByClassName = function(className) {
         recurseThroughDom(el.childNodes[i]);
       }
     }
-
-  }
+  };
 
   recurse(document.body);
   return arr;
