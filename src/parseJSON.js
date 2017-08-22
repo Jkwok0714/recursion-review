@@ -14,31 +14,38 @@ var parseJSON = function(json) {
     let container = [];
     let currStr = '';
     let inString = false;
-    for (let i = 1; i < json.length-1; i++) {
-      if (i === json.length-2){
-        currStr += json[i];
-        // console.log('cur str is', currStr);
-        container.push(parseJSON(currStr.trim()));
-        currStr = '';
-      }
+    // if(json[json.length - 1] !== ']') return undefined;
+    for (let i = 1; i < json.length; i++) {
+      // if (i === json.length-2){
+      //   currStr += json[i];
+      //   // console.log('pass into parse', currStr);
+      //   let el = parseJSON(currStr.trim());
+      //   // if(el === undefined) return undefined;
+      //   container.push(el);
+      //   currStr = '';
+      // }
 
-      if (json[i] === '"' && inString) {
+      if (json[i] === '\\') { //LOOK HERE FOR STRING DEPTH
+        currStr += json[++i];
+        continue;
+      } else if (json[i] === '"' && inString) {
         inString = false;
         depth--;
       } else if (json[i] === '"' && !inString) {
         inString = true;
         depth++;
-      } else if (json[i] === '[') {
+      } else if (json[i] === '[' || json[i] === '{') {
         depth++;
-      } else if (json[i] === '{') {
-        depth++;
-      } else if (json[i] === ']') {
-        depth--;
-      } else if (json[i] === '}') {
+      } else if (json[i] === ']' && depth === 0) {
+        container.push(parseJSON(currStr.trim()));
+        currStr = '';
+        break;
+      } else if (json[i] === ']' || json[i] === '}') {
         depth--;
       } else if (json[i] == ',') {
         if (depth === 0) {
-          container.push(parseJSON(currStr.trim()));
+          let el = parseJSON(currStr.trim());
+          container.push(el);
           currStr = '';
           continue;
         }
@@ -46,8 +53,15 @@ var parseJSON = function(json) {
       currStr += json[i];
     }
 
+    // console.log(depth);
+    // if(depth === 1) {
+    //   console.log('depth is 1');
+    //   console.log(json);
+    //   console.log(container);
+    // }
     if (depth === 0 && currStr.length > 0) {
-      // throw new SyntaxError;
+      console.log('error for', json);
+      throw new SyntaxError;
       return container;
     } else {
       return container;
@@ -59,6 +73,7 @@ var parseJSON = function(json) {
     let currKey = '';
     let currVal = '';
     let inString = false;
+
 
     for (let i = 1; i < json.length-1; i++) {
       if (depth < 0) {
@@ -120,18 +135,20 @@ var parseJSON = function(json) {
 
 
   } else if (json[0] === '"') {
+    // if(json[json.length - 1] === '\"') return undefined;
     if (json[1] === '"') return '';
     let currStr = '';
-    for (var i = 1; i<json.length-1; i++) {
-      if (json[i] === '\\') {
-        currStr += json[i+1];
-        i++;
-      } else {
-        currStr += json[i];
-      }
-    }
+    // for (var i = 1; i<json.length-1; i++) {
+    //   if (json[i] === '\\') {
+    //     currStr += json[i+1];
+    //     i++;
+    //   } else {
+    //     currStr += json[i];
+    //   }
+    // }
 
-    return currStr;
+    // return currStr;
+    return '' + json.slice(1, -1);
   }
 
   if (json === 'false') {
